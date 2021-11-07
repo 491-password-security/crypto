@@ -49,3 +49,5 @@ function combine(shares) {
 function newShare(id, shares) {
     return secrets.newShare(id, secrets);
 }
+
+module.exports = {random, hash, encrypt, decrypt, share, combine, newShare};
