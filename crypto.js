@@ -2,6 +2,11 @@ var sjcl = require('sjcl');
 var secrets = require('secrets.js-grempe');
 
 
+function random(bits, returnBits=false) {
+    var rand = sjcl.random.randomWords(bits/32);
+    return (returnBits) ? rand : sjcl.codec.hex.fromBits(rand);
+}
+
 function hash(input) {
     var out = sjcl.hash.sha256.hash(input);
     return sjcl.codec.hex.fromBits(out);
@@ -12,7 +17,7 @@ function encrypt(key, plaintext) {
     plaintext = sjcl.codec.utf8String.toBits(plaintext);
 
     var aes = new sjcl.cipher.aes(key);
-    var iv = sjcl.random.randomWords(4);
+    var iv = random(128, returnBits=true);
     var ciphertext = sjcl.mode.ccm.encrypt(aes, plaintext ,iv);
 
     return {
@@ -32,10 +37,15 @@ function decrypt(key, iv, ciphertext) {
     return sjcl.codec.utf8String.fromBits(plaintext);
 }
 
-var keyLength = 192;
-var key = sjcl.codec.hex.fromBits(sjcl.random.randomWords(keyLength / 32));
+// secret will already be a hex string, being the output of a hash function
+function share(secret, t, n) {
+    return secrets.share(secret, n, t);
+}
 
-var encResult = encrypt(key, "Hello world!")
-console.log(encResult.iv);
-console.log(encResult.ciphertext);
-console.log(decrypt(key, encResult.iv, encResult.ciphertext));
+function combine(shares) {
+    return secrets.combine(shares);
+}
+
+function newShare(id, shares) {
+    return secrets.newShare(id, secrets);
+}
