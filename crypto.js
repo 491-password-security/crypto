@@ -14,7 +14,7 @@ function hash(input) {
 
 function encrypt(key, plaintext) {
     key = sjcl.codec.hex.toBits(key);
-    plaintext = sjcl.codec.utf8String.toBits(plaintext);
+    plaintext = sjcl.codec.hex.toBits(plaintext);
 
     var aes = new sjcl.cipher.aes(key);
     var iv = random(128, returnBits=true);
@@ -34,7 +34,7 @@ function decrypt(key, iv, ciphertext) {
     var aes = new sjcl.cipher.aes(key);
     var plaintext = sjcl.mode.ccm.decrypt(aes, ciphertext, iv);
 
-    return sjcl.codec.utf8String.fromBits(plaintext);
+    return sjcl.codec.hex.fromBits(plaintext);
 }
 
 // secret will already be a hex string, being the output of a hash function
