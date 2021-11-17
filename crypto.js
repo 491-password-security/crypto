@@ -1,5 +1,10 @@
 var sjcl = require('sjcl');
 var secrets = require('secrets.js-grempe');
+var elgamal = require('elgamal');
+const { BigInteger } = require('jsbn');
+
+const BIG_TWO = new BigInteger('2');
+const BIG_ONE = new BigInteger('1');
 
 
 function random(bits, returnBits=false) {
@@ -51,3 +56,23 @@ function newShare(id, shares) {
 }
 
 module.exports = {random, hash, encrypt, decrypt, share, combine, newShare};
+
+function boundedRandom(max) {
+    return Math.floor(Math.random() * max);
+}
+
+async function getElGamalKeys(bits) {
+    var eg = await elgamal.default.generateAsync(bits);
+    return {
+        p: eg.p,
+        g: eg.g,
+        x: eg.x,
+        g_x: eg.y,
+    };
+}
+
+// (async() => {
+//     console.log(await getElGamalKeys(1024));
+// })();
+
+console.log(boundedRandom(63));
