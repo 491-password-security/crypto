@@ -6,6 +6,10 @@ const { BigInteger } = require('jsbn');
 const BIG_TWO = new BigInteger('2');
 const BIG_ONE = new BigInteger('1');
 
+// TODO: reorganize
+// TODO: comments
+// TODO: pseudorandom function
+
 // TODO: is this ok? (I think it is)
 // these are *not* secret values
 // MOD = prime
@@ -116,6 +120,7 @@ class ObliviousTransferReceiver {
     }
 
     generateKeys(C) {
+        // generate two random keys (as elements from multiplicative Z_p) also using C
         let choiceKey = GEN.modPow(this.k, MOD);
         let negChoiceKey = C.divide(choiceKey).mod(MOD);
         this.keys = [choiceKey, negChoiceKey];
@@ -137,18 +142,22 @@ class OblivousTransferSender {
     constructor(m_0, m_1) {
         this.m_0 = m_0;
         this.m_1 = m_1;
+
+        // initiate random constants
         this.C = getBoundedBigInt(MOD);
         this.r_0 = getBoundedBigInt(MOD);
         this.r_1 = getBoundedBigInt(MOD);
     }
 
     generateKeys(receiverKey) {
+        // generate keys for each message based on receiver's key and the hidden random values
         this.key_0 = receiverKey.modPow(this.r_0, MOD);
         this.key_1 = C.divide(this.key_0).modPow(this.r_1, MOD);
         this.keys = [this.key_0, this.key_1];
     }
 
     encryptMessages() {
+        // encrypt (hash + xor) each message using one of the keys
         let e_0 = [GEN.modPow(this.r_0, MOD), wordWiseXOR(extendedHash(this.key_0, 4), this.m_0)];
         let e_1 = [GEN.modPow(this.r_1, MOD), wordWiseXOR(extendedHash(this.key_1, 4), this.m_1)];
         return [e_0, e_1];
