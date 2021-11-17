@@ -6,15 +6,33 @@ const { BigInteger } = require('jsbn');
 const BIG_TWO = new BigInteger('2');
 const BIG_ONE = new BigInteger('1');
 
+// TODO: is this ok? (I think it is)
+// these are *not* secret values
+// MOD = prime
+// GEN = generator of multiplicative group Z_p
+// GEN ^ (MOD - 1) = 1 mod MOD
+const MOD = new BigInteger('104334873255401717971305551311108568981602782554133676271604158174023613565338436519535738349159664075981513545995816898351274759273689547803611869080590323788134546218679576525351375421659491479861062524332418185137628175629882792848502958254366030986728999054034830850220407425928535174607722203029578103539');
+const GEN = new BigInteger('15309569078288033140294527228325069587420150399530450735556668091277116408023136181284430449588830517258893721878398739530623279778683647761572205172467420662396761999763043433000129229039419004108765113420973429371572791200022523422170732284615282345655002021445578558188416639692531759416866286539604862128');
+
 
 function random(bits, returnBits=false) {
     var rand = sjcl.random.randomWords(bits/32);
     return (returnBits) ? rand : sjcl.codec.hex.fromBits(rand);
 }
 
-function hash(input) {
+function hash(input, returnBits=false) {
     var out = sjcl.hash.sha256.hash(input);
-    return sjcl.codec.hex.fromBits(out);
+    return (returnBits) ? out : sjcl.codec.hex.fromBits(out);
+}
+
+function extendedHash(input, count) {
+    let last_output = input;
+    let result = [];
+    for (var i = 0; i < count; i++) {
+        last_output = hash(sjcl.codec.hex.fromBits(last_output), returnBits=true);
+        result = result.concat(last_output);
+    }
+    return result;
 }
 
 function encrypt(key, plaintext) {
@@ -57,12 +75,12 @@ function newShare(id, shares) {
 
 module.exports = {random, hash, encrypt, decrypt, share, combine, newShare};
 
-function getBoundedRandom(max) {
-    return Math.floor(Math.random() * max);
-}
-
-function getRandomGroupElement(generator, modulo, expBits) {
-    return generator.modPow(new BigInteger(random(expBits)), modulo);
+function getBoundedBigInt(max) {
+    let bits = max.bitLength();
+    do {
+        var rand = new BigInteger(random(bits));
+    } while (rand.compareTo(max) >= 0);
+    return rand;
 }
 
 async function getElGamalKeys(bits) {
@@ -75,9 +93,88 @@ async function getElGamalKeys(bits) {
     };
 }
 
-(async() => {
-    var eg = await getElGamalKeys(1024);
-    var elt = getRandomGroupElement(eg.g, eg.p, 1023)
-    console.log(elt.toString());
-    console.log(elt.gcd(eg.p).toString());
-})();
+function wordWiseXOR(u, v) {
+    var result = [];
+    for (var i = 0; i < u.length; i++) {
+        try {
+            result.push(u[i] ^ v[i]);   
+        } catch (error) {
+            break;
+        }
+    }
+    return result;
+}
+
+class ObliviousTransferReceiver {
+    constructor(choice) {
+        // TODO: raise exception if choice not one or zero
+        this.choice = choice;
+        this.keys = [];
+        
+        // pick random element from additive Z_p
+        this.k = getBoundedBigInt(MOD);        
+    }
+
+    generateKeys(C) {
+        let choiceKey = GEN.modPow(this.k, MOD);
+        let negChoiceKey = C.divide(choiceKey).mod(MOD);
+        this.keys = [choiceKey, negChoiceKey];
+    }
+
+    readMessage(choices) {
+        // choose one of the messages
+        let ciphertext = choices[this.choice];
+
+        // g^(r_sigma)^k = PK_sigma^(r_sigma)
+        let xorKey = extendedHash(ciphertext[0].modPow(this.k, MOD), 4);
+
+        // decrypt the ciphertext
+        return wordWiseXOR(ciphertext[1], xorKey);
+    }
+}
+
+class OblivousTransferSender {
+    constructor(m_0, m_1) {
+        this.m_0 = m_0;
+        this.m_1 = m_1;
+        this.C = getBoundedBigInt(MOD);
+        this.r_0 = getBoundedBigInt(MOD);
+        this.r_1 = getBoundedBigInt(MOD);
+    }
+
+    generateKeys(receiverKey) {
+        this.key_0 = receiverKey.modPow(this.r_0, MOD);
+        this.key_1 = C.divide(this.key_0).modPow(this.r_1, MOD);
+        this.keys = [this.key_0, this.key_1];
+    }
+
+    encryptMessages() {
+        let e_0 = [GEN.modPow(this.r_0, MOD), wordWiseXOR(extendedHash(this.key_0, 4), this.m_0)];
+        let e_1 = [GEN.modPow(this.r_1, MOD), wordWiseXOR(extendedHash(this.key_1, 4), this.m_1)];
+        return [e_0, e_1];
+    }
+}
+
+// let m_0 = getBoundedBigInt(MOD);
+// let m_1 = getBoundedBigInt(MOD);
+
+// console.log(m_0);
+// console.log(m_1);
+
+// let receiver = new ObliviousTransferReceiver(0);
+// let sender = new OblivousTransferSender(m_0, m_1);
+
+// let C = sender.C;
+
+// receiver.generateKeys(C);
+
+// let receiverKey = receiver.keys[receiver.choice];
+
+// sender.generateKeys(receiverKey);
+
+// [e_0, e_1] = sender.encryptMessages();
+
+// let result = receiver.readMessage([e_0, e_1]);
+
+// console.log(result);
+
