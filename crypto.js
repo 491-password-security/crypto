@@ -57,8 +57,12 @@ function newShare(id, shares) {
 
 module.exports = {random, hash, encrypt, decrypt, share, combine, newShare};
 
-function boundedRandom(max) {
+function getBoundedRandom(max) {
     return Math.floor(Math.random() * max);
+}
+
+function getRandomGroupElement(generator, modulo, expBits) {
+    return generator.modPow(new BigInteger(random(expBits)), modulo);
 }
 
 async function getElGamalKeys(bits) {
@@ -71,8 +75,9 @@ async function getElGamalKeys(bits) {
     };
 }
 
-// (async() => {
-//     console.log(await getElGamalKeys(1024));
-// })();
-
-console.log(boundedRandom(63));
+(async() => {
+    var eg = await getElGamalKeys(1024);
+    var elt = getRandomGroupElement(eg.g, eg.p, 1023)
+    console.log(elt.toString());
+    console.log(elt.gcd(eg.p).toString());
+})();
