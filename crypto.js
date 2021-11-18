@@ -124,18 +124,15 @@ async function getElGamalKeys(bits) {
 }
 
 function xor(u, v) {
+    let length = Math.min(u.bytes.length, v.bytes.length);
     let resultNum = new Number()
     var result = [];
-    for (var i = 0; i < u.bytes.length; i++) {
-        try {
-            result.push(u.bytes[i] ^ v.bytes[i]);   
-        } catch (error) {
-            break;
-        }
+    for (var i = 0; i < length; i++) {
+        result.push(u.bytes[i] ^ v.bytes[i]);   
     }
     resultNum.bytes = result;
     return resultNum;
-}
+}   
 
 function hex2Bin(hex){
     var out = "";
@@ -164,6 +161,9 @@ function hex2Bin(hex){
 }
 
 function hex2Bytes(hex) {
+    if (hex.length % 2 != 0) {
+        hex = '0' + hex;
+    }
     return sjcl.codec.bytes.fromBits(sjcl.codec.hex.toBits(hex));
 }
 

@@ -38,7 +38,7 @@ module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
     generateKeys(C) {
         // generate two random keys (as elements from multiplicative Z_p) also using C
         let choiceKey = GEN.modPow(this.k, MOD);
-        let negChoiceKey = C.divide(choiceKey).mod(MOD);
+        let negChoiceKey = C.divide(choiceKey);
         this.keys = [choiceKey, negChoiceKey];
     }
 
@@ -52,7 +52,7 @@ module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
         let xorKey = crypto.util.extendedHash(hint.modPow(this.k, MOD), 4);
 
         // decrypt the ciphertext
-        return crypto.util.xor(ciphertext, xorKey);
+        return crypto.util.xor(xorKey, ciphertext);
     }
 }
 
@@ -87,7 +87,7 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
     generateKeys(receiverKey) {
         // generate keys for each message based on receiver's key and the hidden random values
         this.key_0 = receiverKey.modPow(this.r_0, MOD);
-        this.key_1 = this.C.divide(this.key_0).modPow(this.r_1, MOD);
+        this.key_1 = this.C.divide(receiverKey).modPow(this.r_1, MOD);
         this.keys = [this.key_0, this.key_1];
     }
 
