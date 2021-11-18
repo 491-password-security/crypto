@@ -1,7 +1,7 @@
 var crypto = require('./crypto.js');
 
-const MOD = crypto.MOD;
-const GEN = crypto.GEN;
+const MOD = crypto.constants.MOD;
+const GEN = crypto.constants.GEN;
 
 module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
     constructor(choice) {
@@ -10,7 +10,7 @@ module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
         this.keys = [];
         
         // pick random element from additive Z_p
-        this.k = crypto.getBoundedBigInt(MOD);        
+        this.k = crypto.util.getBoundedBigInt(MOD);        
     }
 
     generateKeys(C) {
@@ -25,10 +25,10 @@ module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
         let ciphertext = choices[this.choice];
 
         // g^(r_sigma)^k = PK_sigma^(r_sigma)
-        let xorKey = crypto.extendedHash(ciphertext[0].modPow(this.k, MOD), 4);
+        let xorKey = crypto.util.extendedHash(ciphertext[0].modPow(this.k, MOD), 4);
 
         // decrypt the ciphertext
-        return crypto.wordWiseXOR(ciphertext[1], xorKey);
+        return crypto.util.wordWiseXOR(ciphertext[1], xorKey);
     }
 }
 
@@ -38,9 +38,9 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
         this.m_1 = m_1;
 
         // initiate random constants
-        this.C = crypto.getBoundedBigInt(MOD);
-        this.r_0 = crypto.getBoundedBigInt(MOD);
-        this.r_1 = crypto.getBoundedBigInt(MOD);
+        this.C = crypto.util.getBoundedBigInt(MOD);
+        this.r_0 = crypto.util.getBoundedBigInt(MOD);
+        this.r_1 = crypto.util.getBoundedBigInt(MOD);
     }
 
     generateKeys(receiverKey) {
@@ -52,8 +52,8 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
 
     encryptMessages() {
         // encrypt (hash + xor) each message using one of the keys
-        let e_0 = [GEN.modPow(this.r_0, MOD), crypto.wordWiseXOR(crypto.extendedHash(this.key_0, 4), this.m_0)];
-        let e_1 = [GEN.modPow(this.r_1, MOD), crypto.wordWiseXOR(crypto.extendedHash(this.key_1, 4), this.m_1)];
+        let e_0 = [GEN.modPow(this.r_0, MOD), crypto.util.wordWiseXOR(crypto.util.extendedHash(this.key_0, 4), this.m_0)];
+        let e_1 = [GEN.modPow(this.r_1, MOD), crypto.util.wordWiseXOR(crypto.util.extendedHash(this.key_1, 4), this.m_1)];
         return [e_0, e_1];
     }
 }
