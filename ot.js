@@ -1,4 +1,7 @@
 var crypto = require('./crypto.js');
+const { BigInteger } = require('jsbn');
+
+let Number = crypto.Number;
 
 const MOD = crypto.constants.MOD;
 const GEN = crypto.constants.GEN;
@@ -19,11 +22,11 @@ module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
 
     start(address) {
         // get the random constant C from the sender
-        let C = this.receiveCallback();
+        let C = new Number(this.receiveCallback(), 16);
 
         // generate two keys and send the valid key to the sender
         this.generateKeys(C);
-        this.sendCallback(address, this.keys[this.choice]);
+        this.sendCallback(address, this.keys[this.choice].toString(16));
 
         // receive the two encryptions from the sender
         let choices = this.receiveCallback();
@@ -41,13 +44,15 @@ module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
 
     readMessage(choices) {
         // choose one of the messages
-        let ciphertext = choices[this.choice];
+        let pair = choices[this.choice];
+        let hint = pair[0];
+        let ciphertext = pair[1];
 
         // g^(r_sigma)^k = PK_sigma^(r_sigma)
-        let xorKey = crypto.util.extendedHash(ciphertext[0].modPow(this.k, MOD), 4);
+        let xorKey = crypto.util.extendedHash(hint.modPow(this.k, MOD), 4);
 
         // decrypt the ciphertext
-        return crypto.util.wordWiseXOR(ciphertext[1], xorKey);
+        return crypto.util.xor(ciphertext, xorKey);
     }
 }
 
@@ -66,10 +71,10 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
 
     start(address) {
         // send the constant value C to the receiver
-        this.sendCallback(address, this.C);
+        this.sendCallback(address, this.C.hex);
 
         // receive one key from receiver
-        let receiverKey = this.receiveCallback(address);
+        let receiverKey = new Number(this.receiveCallback(address), 16);
 
         // generate two keys based on the received key and the hidden random values
         this.generateKeys(receiverKey);
@@ -88,8 +93,14 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
 
     encryptMessages() {
         // encrypt (hash + xor) each message using one of the keys
-        let e_0 = [GEN.modPow(this.r_0, MOD), crypto.util.wordWiseXOR(crypto.util.extendedHash(this.key_0, 4), this.m_0)];
-        let e_1 = [GEN.modPow(this.r_1, MOD), crypto.util.wordWiseXOR(crypto.util.extendedHash(this.key_1, 4), this.m_1)];
+        let xorKey_0 = crypto.util.extendedHash(this.key_0, 4);
+        let xorKey_1 = crypto.util.extendedHash(this.key_1, 4);
+
+        let ct_0 = crypto.util.xor(xorKey_0, this.m_0);
+        let ct_1 = crypto.util.xor(xorKey_1, this.m_1);
+
+        let e_0 = [GEN.modPow(this.r_0, MOD), ct_0];
+        let e_1 = [GEN.modPow(this.r_1, MOD), ct_1];
         return [e_0, e_1];
     }
 }
