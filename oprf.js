@@ -6,6 +6,10 @@ const MOD = crypto.constants.MOD;
 const GEN = crypto.constants.GEN;
 const Number = crypto.Number;
 
+const ONE = new Number('1');
+const MOD_1 = MOD.subtract(ONE);
+
+
 // class OPRFInputHolder {
 //     constructor(input, sendCallback, receiveCallback, address) {
 //         this.sendCallback = sendCallback;
@@ -26,18 +30,6 @@ const Number = crypto.Number;
 
 // }
 
-function F(k, x) {
-    console.log(x)
-    let exp = new Number('1');
-    let bits = crypto.codec.hex2Bin(x)
-    for (var i = 0; i < 256; i++) {
-        if (bits[i] == '1') {
-            exp = exp.multiply(k[i]);
-        }
-    }
-    return GEN.modPow(exp, MOD);
-}
-
 function OT(choice, m_0, m_1) {
     let receiver = new ot.ObliviousTransferReceiver(choice, null, null);
     let sender = new ot.ObliviousTransferSender(m_0, m_1, null, null);
@@ -57,37 +49,53 @@ function OT(choice, m_0, m_1) {
     return result; // returns Number
 }
 
-function OPRF(k,x) {
-    let a = [];
+function generatePRFKey(count) {
+    let key = [];
+    for (var i = 0; i < count; i++) {
+        let pow = crypto.util.getBoundedBigInt(MOD_1);
+        key.push(GEN.modPow(pow, MOD));
+    }        
+    return key;
+}
+
+function F(k, bits) {
+    let exp = new Number('1');
     for (var i = 0; i < 256; i++) {
-        a.push(crypto.util.getBoundedBigInt(MOD));
+        if (bits[i] == '1') {
+            exp = exp.multiply(k[i]).mod(MOD);
+        }
     }
+    console.log('f exp: ', exp.bigInt.toString())
+    return GEN.modPow(exp, MOD);
+}
+
+function OPRF(k,bits) {
+    let a = generatePRFKey(256);
 
     let client_prod = new Number('1');
     let server_prod = new Number('1');
     for (var i = 0; i < 256; i++) {
         let m_0 = a[i];
-        let m_1 = a[i].multiply(k[i]).mod(MOD.subtract(1));
+        let m_1 = a[i].multiply(k[i]).mod(MOD);
+        
+        server_prod = server_prod.multiply(a[i]).mod(MOD);
 
-        server_prod = server_prod.multiply(a[i].modInverse(MOD.subtract(1))).mod(MOD.subtract(1));
+        let client_reveal = OT(parseInt(bits[i]), m_0, m_1);
 
-        let choice = Math.random(2);
-        let client_reveal = OT(choice, m_0, m_1);
-
-        client_prod = client_prod.multiply(client_reveal).mod(MOD.subtract(1));
+        client_prod = client_prod.multiply(client_reveal).mod(MOD);
     }
 
-    let exp = server_prod.multiply(client_prod).mod(MOD.subtract(1));
-    return GEN.exp(exp).mod(MOD);
+    server_prod = server_prod.modInverse(MOD);
+
+    let exp = server_prod.multiply(client_prod).mod(MOD);
+    console.log('oprf exp: ', exp.bigInt.toString())
+    return GEN.modPow(exp, MOD);
 }
 
 let pwd = 'helloworld';
-console.log(crypto.util.hash(pwd))
 let x = new Number(crypto.util.hash(pwd), 16);
-let k = [];
-for (var i = 0; i < 256; i++) {
-    k.push(crypto.util.getBoundedBigInt(MOD));
-}
+let k = generatePRFKey(256);
+let bits = crypto.codec.hex2Bin(x.hex);
 
-console.log(F(k, x.hex).hex);
-console.log(OPRF(k, x.hex).hex);
+console.log(F(k, bits).hex);
+console.log(OPRF(k, bits).hex);

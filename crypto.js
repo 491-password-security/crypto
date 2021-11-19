@@ -49,6 +49,10 @@ class Number {
     compareTo(other){
         return this.bigInt.compareTo(other.bigInt);
     }
+
+    subtract(other) {
+        return new Number(this.bigInt.subtract(other.bigInt).toString());
+    }
 }
 
 const BIG_TWO = new Number('2');
