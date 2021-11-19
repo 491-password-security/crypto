@@ -51,8 +51,6 @@ module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
         // g^(r_sigma)^k = PK_sigma^(r_sigma)
         let xorKey = crypto.util.extendedHash(hint.modPow(this.k, MOD), 4);
 
-        console.log('receiver hash input: ', hint.modPow(this.k, MOD).hex)
-
         // decrypt the ciphertext
         return crypto.util.xor(xorKey, ciphertext);
     }
@@ -66,7 +64,6 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
         this.receiveCallback = receiveCallback;
 
         // initiate random constants
-        // TODO: 
         this.log_C = crypto.util.getBoundedBigInt(MOD);
         this.C = GEN.modPow(this.log_C, MOD);
         this.r_0 = crypto.util.getBoundedBigInt(MOD);
@@ -104,8 +101,6 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
 
         let ct_0 = crypto.util.xor(xorKey_0, this.m_0);
         let ct_1 = crypto.util.xor(xorKey_1, this.m_1);
-
-        console.log('sender hash input: ', this.key_1.hex)
 
         let e_0 = [GEN.modPow(this.r_0, MOD), ct_0];
         let e_1 = [GEN.modPow(this.r_1, MOD), ct_1];

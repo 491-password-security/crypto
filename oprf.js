@@ -4,6 +4,7 @@ var ot = require('./ot.js');
 
 const MOD = crypto.constants.MOD;
 const GEN = crypto.constants.GEN;
+const Number = crypto.Number;
 
 // class OPRFInputHolder {
 //     constructor(input, sendCallback, receiveCallback, address) {
@@ -26,9 +27,11 @@ const GEN = crypto.constants.GEN;
 // }
 
 function F(k, x) {
-    let exp = new BigInteger('1');
+    console.log(x)
+    let exp = new Number('1');
+    let bits = crypto.codec.hex2Bin(x)
     for (var i = 0; i < 256; i++) {
-        if (x[i] == '1') {
+        if (bits[i] == '1') {
             exp = exp.multiply(k[i]);
         }
     }
@@ -36,7 +39,7 @@ function F(k, x) {
 }
 
 function OT(choice, m_0, m_1) {
-    let receiver = new ot.ObliviousTransferReceiver(0, null, null);
+    let receiver = new ot.ObliviousTransferReceiver(choice, null, null);
     let sender = new ot.ObliviousTransferSender(m_0, m_1, null, null);
 
     let C = sender.C;
@@ -51,7 +54,7 @@ function OT(choice, m_0, m_1) {
 
     let result = receiver.readMessage([e_0, e_1]);
 
-    return result;
+    return result; // returns Number
 }
 
 function OPRF(k,x) {
@@ -60,18 +63,16 @@ function OPRF(k,x) {
         a.push(crypto.util.getBoundedBigInt(MOD));
     }
 
-    let client_prod = new BigInteger('1');
-    let server_prod = new BigInteger('1');
+    let client_prod = new Number('1');
+    let server_prod = new Number('1');
     for (var i = 0; i < 256; i++) {
         let m_0 = a[i];
         let m_1 = a[i].multiply(k[i]).mod(MOD.subtract(1));
 
-        server_prod = server_prod.multiply(a[i]).mod(MOD.subtract(1));
+        server_prod = server_prod.multiply(a[i].modInverse(MOD.subtract(1))).mod(MOD.subtract(1));
 
         let choice = Math.random(2);
         let client_reveal = OT(choice, m_0, m_1);
-
-        // convert word array to big integer
 
         client_prod = client_prod.multiply(client_reveal).mod(MOD.subtract(1));
     }
@@ -81,11 +82,12 @@ function OPRF(k,x) {
 }
 
 let pwd = 'helloworld';
-let x = crypto.util.hex2bin(crypto.util.hash(pwd));
+console.log(crypto.util.hash(pwd))
+let x = new Number(crypto.util.hash(pwd), 16);
 let k = [];
 for (var i = 0; i < 256; i++) {
     k.push(crypto.util.getBoundedBigInt(MOD));
 }
 
-console.log(F(k, x).toString());
-console.log(OPRF(k, x).toString());
+console.log(F(k, x.hex).hex);
+console.log(OPRF(k, x.hex).hex);
