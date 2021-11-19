@@ -37,6 +37,18 @@ class Number {
     mod(other) {
         return new Number(this.bigInt.mod(other.bigInt).toString());
     }
+
+    modInverse(mod) {
+        return new Number(this.bigInt.modInverse(mod.bigInt).toString());
+    }
+
+    multiply(other) {
+        return new Number(this.bigInt.multiply(other.bigInt).toString());
+    }
+
+    compareTo(other){
+        return this.bigInt.compareTo(other.bigInt);
+    }
 }
 
 const BIG_TWO = new Number('2');
