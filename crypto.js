@@ -1,5 +1,5 @@
 var sjcl = require('sjcl');
-var secrets = require('secrets.js-grempe');
+var secrets = require('secrets.js-34r7h');
 
 
 function random(bits, returnBits=false) {
