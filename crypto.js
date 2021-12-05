@@ -1,5 +1,5 @@
 var sjcl = require('sjcl');
-var secrets = require('secrets.js-34r7h');
+var secrets = require('shamirs-secret-sharing');
 
 
 function random(bits, returnBits=false) {
@@ -37,17 +37,17 @@ function decrypt(key, iv, ciphertext) {
     return sjcl.codec.hex.fromBits(plaintext);
 }
 
-// secret will already be a hex string, being the output of a hash function
 function share(secret, t, n) {
-    return secrets.share(secret, n, t);
+    let hex_shares = [];
+    let shares = secrets.split(Buffer.from(secret), { shares: n, threshold: t });
+    for (let i = 0; i < shares.length; i++) {
+        hex_shares.push(shares[i].toString('hex'));
+    }
+    return hex_shares;
 }
 
-function combine(shares) {
-    return secrets.combine(shares);
+function combine(shares, encoding='hex') {
+    return secrets.combine(shares).toString(encoding);
 }
 
-function newShare(id, shares) {
-    return secrets.newShare(id, shares);
-}
-
-module.exports = {random, hash, encrypt, decrypt, share, combine, newShare};
+module.exports = {random, hash, encrypt, decrypt, share, combine};

@@ -23,8 +23,7 @@
     "webpack-cli": "^4.9.1"
   },
   "dependencies": {
-    "secrets.js-34r7h": "^2.0.1",
-    "secrets.js-grempe": "^2.0.0",
+    "shamirs-secret-sharing": "^1.0.1",
     "sjcl": "^1.0.8"
   },
   "module": "./crypto.js"
