@@ -1,7 +1,7 @@
 global.Buffer = global.Buffer || require('buffer').Buffer
 
 var sjcl = require('./sjcl');
-var secrets = require('shamirs-secret-sharing');
+var secrets = require('./shamirs-secret-sharing');
 
 
 function random(bits, returnBits=false) {
