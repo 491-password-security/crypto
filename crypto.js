@@ -2,7 +2,7 @@ global.Buffer = global.Buffer || require('buffer').Buffer
 
 var sjcl = require('./sjcl');
 var secrets = require('./shamirs-secret-sharing');
-const { BigInteger } = require('jsbn');
+const { BigInteger } = require('./jsbn');
 
 class Number {
     constructor(str="1", radix=10) {
