@@ -1,6 +1,7 @@
+global.Buffer = global.Buffer || require('buffer').Buffer
+
 var sjcl = require('./sjcl');
-var secrets = require('secrets.js-grempe');
-var elgamal = require('elgamal');
+var secrets = require('./shamirs-secret-sharing');
 const { BigInteger } = require('jsbn');
 
 class Number {
@@ -107,17 +108,17 @@ function decrypt(key, iv, ciphertext) {
     return sjcl.codec.hex.fromBits(plaintext);
 }
 
-// secret will already be a hex string, being the output of a hash function
 function share(secret, t, n) {
-    return secrets.share(secret, n, t);
+    let hex_shares = [];
+    let shares = secrets.split(Buffer.from(secret), { shares: n, threshold: t });
+    for (let i = 0; i < shares.length; i++) {
+        hex_shares.push(shares[i].toString('hex'));
+    }
+    return hex_shares;
 }
 
-function combine(shares) {
-    return secrets.combine(shares);
-}
-
-function newShare(id, shares) {
-    return secrets.newShare(id, shares);
+function combine(shares, encoding='hex') {
+    return secrets.combine(shares).toString(encoding);
 }
 
 function getBoundedBigInt(max) {
@@ -196,8 +197,10 @@ function bigInt2Bytes(bigInt) {
 }
 
 module.exports.constants = {MOD, GEN};
-module.exports.ss = {share, combine, newShare};
+module.exports.ss = {share, combine};
 module.exports.util = {random, hash, extendedHash, getBoundedBigInt, getElGamalKeys, xor};
 module.exports.aes = {encrypt, decrypt};
 module.exports.codec = {hex2Bytes, hex2Bin, bytes2Hex, bytes2BigInt, bigInt2Bytes}
 module.exports.Number = Number;
+
+console.log(share('hello', 2, 3));
