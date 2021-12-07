@@ -202,5 +202,3 @@ module.exports.util = {random, hash, extendedHash, getBoundedBigInt, getElGamalK
 module.exports.aes = {encrypt, decrypt};
 module.exports.codec = {hex2Bytes, hex2Bin, bytes2Hex, bytes2BigInt, bigInt2Bytes}
 module.exports.Number = Number;
-
-console.log(share('hello', 2, 3));
