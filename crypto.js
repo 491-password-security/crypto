@@ -53,5 +53,3 @@ function combine(shares, encoding='hex') {
 }
 
 module.exports = {random, hash, encrypt, decrypt, share, combine};
-
-console.log(share("hello", 2, 3))
