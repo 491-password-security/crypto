@@ -1,4 +1,4 @@
-var sjcl = require('sjcl');
+var sjcl = require('./sjcl');
 var secrets = require('shamirs-secret-sharing');
 
 
@@ -51,3 +51,5 @@ function combine(shares, encoding='hex') {
 }
 
 module.exports = {random, hash, encrypt, decrypt, share, combine};
+
+console.log(share("hello", 2, 3))
