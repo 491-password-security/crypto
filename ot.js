@@ -16,8 +16,8 @@ module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
         this.choice = choice;
         this.keys = [];
         
-        // pick random element from additive Z_p
-        this.k = crypto.util.getBoundedBigInt(MOD);        
+        let temp = crypto.util.getBoundedBigInt(MOD);        
+        this.k = GEN.modPow(temp, MOD);
     }
 
     start(address) {
@@ -66,8 +66,10 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
         // initiate random constants
         this.log_C = crypto.util.getBoundedBigInt(MOD);
         this.C = GEN.modPow(this.log_C, MOD);
-        this.r_0 = crypto.util.getBoundedBigInt(MOD);
-        this.r_1 = crypto.util.getBoundedBigInt(MOD);
+        let temp_0 = crypto.util.getBoundedBigInt(MOD);
+        let temp_1 = crypto.util.getBoundedBigInt(MOD);
+        this.r_0 = GEN.modPow(temp_0, MOD);
+        this.r_1 = GEN.modPow(temp_1, MOD);
     }
 
     start(address) {
@@ -89,8 +91,12 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
         // generate keys for each message based on receiver's key and the hidden random values
         this.key_0 = receiverKey;
         this.key_1 = this.key_0.modInverse(MOD).multiply(this.C).mod(MOD);
-        this.key_0 = this.key_0.modPow(this.r_0, MOD);
-        this.key_1 = this.key_1.modPow(this.r_1, MOD);
+
+        let temp_0 = this.key_0.modPow(this.r_0, MOD);
+        let temp_1 = this.key_1.modPow(this.r_1, MOD);
+
+        this.key_0 = temp_0;
+        this.key_1 = temp_1;
         this.keys = [this.key_0, this.key_1];
     }
 
@@ -104,6 +110,7 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
 
         let e_0 = [GEN.modPow(this.r_0, MOD), ct_0];
         let e_1 = [GEN.modPow(this.r_1, MOD), ct_1];
+
         return [e_0, e_1];
     }
 }
