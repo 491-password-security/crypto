@@ -1,5 +1,6 @@
 var crypto = require('./crypto.js');
-const { BigInteger } = require('jsbn');
+
+// OT should work by initiaiting the sender and receiver and then just calling start for each
 
 let Number = crypto.Number;
 
@@ -26,7 +27,7 @@ module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
 
         // generate two keys and send the valid key to the sender
         this.generateKeys(C);
-        this.sendCallback(address, this.keys[this.choice].toString(16));
+        this.sendCallback(address, this.keys[this.choice].hex);
 
         // receive the two encryptions from the sender
         let choices = this.receiveCallback();
@@ -49,10 +50,14 @@ module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
         let ciphertext = pair[1];
 
         // g^(r_sigma)^k = PK_sigma^(r_sigma)
-        let xorKey = crypto.util.extendedHash(hint.modPow(this.k, MOD), 4);
+        let key = hint.modPow(this.k, MOD);
+        let xorKey = crypto.util.extendedHash(key, 4);
+
+        let result = ciphertext.multiply(GEN.modPow(key, MOD).modInverse(MOD)).mod(MOD);
 
         // decrypt the ciphertext
-        return crypto.util.xor(xorKey, ciphertext);
+        // return crypto.util.xor(xorKey, ciphertext);
+        return result;
     }
 }
 
@@ -101,12 +106,8 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
     }
 
     encryptMessages() {
-        // encrypt (hash + xor) each message using one of the keys
-        let xorKey_0 = crypto.util.extendedHash(this.key_0, 4);
-        let xorKey_1 = crypto.util.extendedHash(this.key_1, 4);
-
-        let ct_0 = crypto.util.xor(xorKey_0, this.m_0);
-        let ct_1 = crypto.util.xor(xorKey_1, this.m_1);
+        let ct_0 = GEN.modPow(this.key_0, MOD).multiply(this.m_0).mod(MOD);
+        let ct_1 = GEN.modPow(this.key_1, MOD).multiply(this.m_1).mod(MOD);
 
         let e_0 = [GEN.modPow(this.r_0, MOD), ct_0];
         let e_1 = [GEN.modPow(this.r_1, MOD), ct_1];

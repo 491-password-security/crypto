@@ -90,6 +90,15 @@ function extendedHash(input, count) {
     return new Number(result.join(''), 16);
 }
 
+function generatePRFKey(count) {
+    let key = [];
+    for (var i = 0; i < count; i++) {
+        let pow = crypto.util.getBoundedBigInt(MOD);
+        key.push(GEN.modPow(pow, MOD));
+    }        
+    return key;
+}
+
 function encrypt(key, plaintext) {
     key = sjcl.codec.hex.toBits(key);
     plaintext = sjcl.codec.hex.toBits(plaintext);
@@ -205,7 +214,7 @@ function bigInt2Bytes(bigInt) {
 
 module.exports.constants = {MOD, GEN};
 module.exports.ss = {share, combine};
-module.exports.util = {random, hash, extendedHash, getBoundedBigInt, getElGamalKeys, xor};
+module.exports.util = {random, hash, extendedHash, getBoundedBigInt, getElGamalKeys, xor, generatePRFKey};
 module.exports.aes = {encrypt, decrypt};
 module.exports.codec = {hex2Bytes, hex2Bin, bytes2Hex, bytes2BigInt, bigInt2Bytes}
 module.exports.Number = Number;
