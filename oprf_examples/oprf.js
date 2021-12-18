@@ -63,5 +63,9 @@ let x = new Number(crypto.util.hash(pwd), 16);
 let k = crypto.util.generatePRFKey(256);
 let bits = crypto.codec.hex2Bin(x.hex);
 
-console.log(F(k, bits).decimal);
-console.log(OPRF(k, bits).decimal);
+// console.log(F(k, bits).decimal);
+// console.log(OPRF(k, bits).decimal);
+
+for (var i = 0; i < 256; i++) {
+    console.log("new Number(" + "\"" + k[i].hex + "\"),");
+}
