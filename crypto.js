@@ -221,7 +221,7 @@ module.exports.Number = Number;
 
 // OT
 
-module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
+class ObliviousTransferReceiver {
     constructor(choice, sendCallback, receiveCallback) {
         if (choice != 0 && choice != 1) {
             throw new Error('Choice neither 1 nor 0. Enter a single integer (0 or 1) as the choice.');
@@ -231,7 +231,7 @@ module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
         this.choice = choice;
         this.keys = [];
         
-        let temp = crypto.util.getBoundedBigInt(MOD);        
+        let temp = getBoundedBigInt(MOD);        
         this.k = GEN.modPow(temp, MOD);
     }
 
@@ -265,17 +265,16 @@ module.exports.ObliviousTransferReceiver = class ObliviousTransferReceiver {
 
         // g^(r_sigma)^k = PK_sigma^(r_sigma)
         let key = hint.modPow(this.k, MOD);
-        let xorKey = crypto.util.extendedHash(key, 4);
 
         let result = ciphertext.multiply(GEN.modPow(key, MOD).modInverse(MOD)).mod(MOD);
 
         // decrypt the ciphertext
-        // return crypto.util.xor(xorKey, ciphertext);
+        // return util.xor(xorKey, ciphertext);
         return result;
     }
 }
 
-module.exports.ObliviousTransferSender = class ObliviousTransferSender {
+class ObliviousTransferSender {
     constructor(m_0, m_1, sendCallback, receiveCallback) {
         this.m_0 = m_0;
         this.m_1 = m_1;
@@ -283,10 +282,10 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
         this.receiveCallback = receiveCallback;
 
         // initiate random constants
-        this.log_C = crypto.util.getBoundedBigInt(MOD);
+        this.log_C = getBoundedBigInt(MOD);
         this.C = GEN.modPow(this.log_C, MOD);
-        let temp_0 = crypto.util.getBoundedBigInt(MOD);
-        let temp_1 = crypto.util.getBoundedBigInt(MOD);
+        let temp_0 = getBoundedBigInt(MOD);
+        let temp_1 = getBoundedBigInt(MOD);
         this.r_0 = GEN.modPow(temp_0, MOD);
         this.r_1 = GEN.modPow(temp_1, MOD);
     }
@@ -329,3 +328,6 @@ module.exports.ObliviousTransferSender = class ObliviousTransferSender {
         return [e_0, e_1];
     }
 }
+
+module.exports.ObliviousTransferReceiver = ObliviousTransferReceiver;
+module.exports.ObliviousTransferSender = ObliviousTransferSender;

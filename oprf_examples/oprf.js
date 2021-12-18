@@ -1,5 +1,4 @@
 var crypto = require('../crypto.js');
-var ot = require('../ot.js');
 
 const MOD = crypto.constants.MOD;
 const GEN = crypto.constants.GEN;
@@ -8,8 +7,8 @@ const Number = crypto.Number;
 const ONE = new Number('1');
 
 function OT(choice, m_0, m_1) {
-    let receiver = new ot.ObliviousTransferReceiver(choice, null, null);
-    let sender = new ot.ObliviousTransferSender(m_0, m_1, null, null);
+    let receiver = new crypto.ObliviousTransferReceiver(choice, null, null);
+    let sender = new crypto.ObliviousTransferSender(m_0, m_1, null, null);
 
     let C = sender.C;
 
@@ -63,9 +62,9 @@ let x = new Number(crypto.util.hash(pwd), 16);
 let k = crypto.util.generatePRFKey(256);
 let bits = crypto.codec.hex2Bin(x.hex);
 
-// console.log(F(k, bits).decimal);
-// console.log(OPRF(k, bits).decimal);
+console.log(F(k, bits).decimal);
+console.log(OPRF(k, bits).decimal);
 
-for (var i = 0; i < 256; i++) {
-    console.log("new Number(" + "\"" + k[i].hex + "\"),");
-}
+// for (var i = 0; i < 256; i++) {
+//     console.log("new Number(" + "\"" + k[i].hex + "\"),");
+// }
