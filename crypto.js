@@ -136,7 +136,7 @@ function share(secret, t, n) {
     return hex_shares;
 }
 
-function combine(shares, encoding='hex') {
+function combine(shares, encoding='utf8') {
     return secrets.combine(shares).toString(encoding);
 }
 
