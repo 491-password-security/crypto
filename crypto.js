@@ -69,6 +69,9 @@ const BIG_ONE = new Number('1');
 const MOD = new Number('ffffffffffffffffc90fdaa22168c234c4c6628b80dc1cd129024e088a67cc74020bbea63b139b22514a08798e3404ddef9519b3cd3a431b302b0a6df25f14374fe1356d6d51c245e485b576625e7ec6f44c42e9a63a3620ffffffffffffffff', 16)
 const GEN = new Number('2', 10); 
 
+function addEntropy(val) {
+    sjcl.random.addEntropy(val, 128, "user");
+}
 
 function random(bits, returnBits=false) {
     var rand = sjcl.random.randomWords(bits/32);
@@ -214,7 +217,7 @@ function bigInt2Bytes(bigInt) {
 
 module.exports.constants = {MOD, GEN};
 module.exports.ss = {share, combine};
-module.exports.util = {random, hash, extendedHash, getBoundedBigInt, getElGamalKeys, xor, generatePRFKey};
+module.exports.util = {addEntropy, random, hash, extendedHash, getBoundedBigInt, getElGamalKeys, xor, generatePRFKey};
 module.exports.aes = {encrypt, decrypt};
 module.exports.codec = {hex2Bytes, hex2Bin, bytes2Hex, bytes2BigInt, bigInt2Bytes}
 module.exports.Number = Number;
