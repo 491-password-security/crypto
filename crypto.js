@@ -83,6 +83,14 @@ function hash(input, returnBits=false) {
     return (returnBits) ? out : sjcl.codec.hex.fromBits(out);
 }
 
+function groupHash(input) {
+    var out = hash(input);
+    let exp = new Number(out, 16).mod(MOD)
+    return GEN.modPow(exp, MOD);
+}
+
+console.log(groupHash('hello').decimal)
+
 function extendedHash(input, count) {
     let last_output = input.hex;
     let result = [];
