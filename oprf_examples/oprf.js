@@ -6,6 +6,8 @@ const Number = crypto.Number;
 
 const ONE = new Number('1');
 
+const MOD_1 = MOD.subtract(ONE);
+
 function OT(choice, m_0, m_1) {
     let receiver = new crypto.ObliviousTransferReceiver(choice, null, null);
     let sender = new crypto.ObliviousTransferSender(m_0, m_1, null, null);
@@ -58,13 +60,19 @@ function OPRF(k,bits) {
 }
 
 let pwd = 'helloworld';
-let x = new Number(crypto.util.hash(pwd), 16);
-let k = crypto.util.generatePRFKey(256);
-let bits = crypto.codec.hex2Bin(x.hex);
 
-console.log(F(k, bits).decimal);
-console.log(OPRF(k, bits).decimal);
+// random group element
+let r = GEN.modPow(crypto.util.getBoundedBigInt(MOD), MOD);
+let r_inv = r.modInverse(MOD_1);
+let k = GEN.modPow(crypto.util.getBoundedBigInt(MOD), MOD);
 
-// for (var i = 0; i < 256; i++) {
-//     console.log("new Number(" + "\"" + k[i].hex + "\"),");
-// }
+let a = crypto.util.groupHash(pwd).modPow(r, MOD);
+
+let b = a.modPow(k, MOD);
+
+let result = crypto.util.hash(pwd + b.modPow(r_inv, MOD).hex);
+
+let trueResult = crypto.util.hash(pwd + crypto.util.groupHash(pwd).modPow(k, MOD).hex);
+
+console.log(result)
+console.log(trueResult)

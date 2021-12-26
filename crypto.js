@@ -85,11 +85,9 @@ function hash(input, returnBits=false) {
 
 function groupHash(input) {
     var out = hash(input);
-    let exp = new Number(out, 16).mod(MOD)
+    let exp = new Number(out, 16)
     return GEN.modPow(exp, MOD);
 }
-
-console.log(groupHash('hello').decimal)
 
 function extendedHash(input, count) {
     let last_output = input.hex;
@@ -225,7 +223,7 @@ function bigInt2Bytes(bigInt) {
 
 module.exports.constants = {MOD, GEN};
 module.exports.ss = {share, combine};
-module.exports.util = {addEntropy, random, hash, extendedHash, getBoundedBigInt, getElGamalKeys, xor, generatePRFKey};
+module.exports.util = {groupHash, addEntropy, random, hash, extendedHash, getBoundedBigInt, getElGamalKeys, xor, generatePRFKey};
 module.exports.aes = {encrypt, decrypt};
 module.exports.codec = {hex2Bytes, hex2Bin, bytes2Hex, bytes2BigInt, bigInt2Bytes}
 module.exports.Number = Number;
