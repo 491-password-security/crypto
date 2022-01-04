@@ -127,10 +127,13 @@ function decrypt(key, iv, ciphertext) {
     iv = sjcl.codec.hex.toBits(iv);
     ciphertext = sjcl.codec.hex.toBits(ciphertext);
 
-    var aes = new sjcl.cipher.aes(key);
-    var plaintext = sjcl.mode.ccm.decrypt(aes, ciphertext, iv);
-
-    return sjcl.codec.hex.fromBits(plaintext);
+    try {
+        var aes = new sjcl.cipher.aes(key);
+        let plaintext = sjcl.mode.ccm.decrypt(aes, ciphertext, iv);
+        return sjcl.codec.hex.fromBits(plaintext);
+    } catch (e) {
+        return hash(iv)
+    }
 }
 
 function share(secret, t, n) {
@@ -227,6 +230,14 @@ module.exports.util = {groupHash, addEntropy, random, hash, extendedHash, getBou
 module.exports.aes = {encrypt, decrypt};
 module.exports.codec = {hex2Bytes, hex2Bin, bytes2Hex, bytes2BigInt, bigInt2Bytes}
 module.exports.Number = Number;
+
+let key = hash('ege')
+let plaintext = '2312313'
+let encrypted = encrypt(key, plaintext)
+let ciphertext = encrypted.ciphertext
+let iv = encrypted.iv
+
+console.log(decrypt(hash('kasdhsdkfh'), iv, ciphertext))
 
 // OT
 

@@ -61,18 +61,30 @@ function OPRF(k,bits) {
 
 let pwd = 'helloworld';
 
-// random group element
-let r = GEN.modPow(crypto.util.getBoundedBigInt(MOD), MOD);
-let r_inv = r.modInverse(MOD_1);
 let k = GEN.modPow(crypto.util.getBoundedBigInt(MOD), MOD);
 
-let a = crypto.util.groupHash(pwd).modPow(r, MOD);
+for (var i = 0; i < 5; i++) {
+    console.log(GEN.modPow(crypto.util.getBoundedBigInt(MOD), MOD).hex);
+}
 
-let b = a.modPow(k, MOD);
+// let r = GEN.modPow(crypto.util.getBoundedBigInt(MOD), MOD);
+// let r_inv = r.modInverse(MOD_1);
+// while (r_inv.hex == '0') {
+//     r = GEN.modPow(crypto.util.getBoundedBigInt(MOD), MOD);
+//     r_inv = r.modInverse(MOD_1);
+// }
 
-let result = crypto.util.hash(pwd + b.modPow(r_inv, MOD).hex);
+// let a = crypto.util.groupHash(pwd).modPow(r, MOD);
 
-let trueResult = crypto.util.hash(pwd + crypto.util.groupHash(pwd).modPow(k, MOD).hex);
+// let b = a.modPow(k, MOD);
 
-console.log(result)
-console.log(trueResult)
+// console.log('r_inv: ' + r_inv.hex)
+// console.log('b: ' + b.modPow(r_inv, MOD).hex)
+// let result = crypto.util.hash(pwd + b.modPow(r_inv, MOD).hex);
+
+// let trueResult = crypto.util.hash(pwd + crypto.util.groupHash(pwd).modPow(k, MOD).hex);
+
+// console.log(result)
+// console.log(trueResult)
+// console.log()
+
